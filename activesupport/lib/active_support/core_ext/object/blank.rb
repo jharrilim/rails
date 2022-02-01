@@ -41,9 +41,26 @@ class Object
   #
   #   region = params[:state].presence || params[:country].presence || 'US'
   #
+  # If a block is supplied, this method will apply the block
+  # to the receiver if it is present.
+  #
+  # For example
+  #
+  #   display_name = params[:data][:user][:username].present? ? "User #{params[:data][:user][:username]}" : nil
+  #
+  # becomes
+  #
+  #   display_name = params[:data][:user][:username].presence { |name| "User #{name}" }
+  #
   # @return [Object]
-  def presence
-    self if present?
+  def presence(&block)
+    if present?
+      if block
+        block.call(self)
+      else
+        self
+      end
+    end
   end
 end
 
