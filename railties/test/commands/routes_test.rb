@@ -403,6 +403,22 @@ rails_conductor_inbound_email_incinerate POST /rails/conductor/action_mailbox/:i
     assert_includes(output, "No unused routes found.")
   end
 
+  test "rails routes with json option" do
+    app_file "config/routes.rb", <<-RUBY
+      Rails.application.routes.draw do
+        get '/cart', to: 'cart#show'
+      end
+    RUBY
+
+    output = JSON.parse(run_routes_command([ "--json" ]))
+    assert_equal(output["prefix"], "cart")
+    assert_equal(output["verb"], "GET")
+    assert_equal(output["uri"], "/cart(.:format)")
+    assert_equal(output["controller"]["name"], "cart")
+    assert_equal(output["controller"]["action"], "show")
+    assert_equal(output["controller"]["class"], "CartController")
+  end
+
   private
     def run_routes_command(args = [])
       rails "routes", args

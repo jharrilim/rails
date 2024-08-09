@@ -280,6 +280,39 @@ module ActionDispatch
             end
         end
       end
+
+      class Json < Base
+        def section(routes)
+          routes = routes.map do |r|
+            controller, action = r[:reqs].split("#")
+
+            controller_class, source_location =
+              if controller.include?("::") || controller.start_with?(/[A-Z]/) || action.nil? # Rack apps, ie. PropShaft::Server
+                source_location = Object.const_source_location(controller).join(":") rescue nil
+                [controller, source_location]
+              else # Rails controllers, ie. admin/users
+                controller_class = controller.split("/").map(&:camelize).join("::") + "Controller"
+                controller_constant = controller_class.constantize rescue nil
+                [controller_class, controller_constant && controller_constant.instance_method(action).source_location.join(":")]
+              end
+
+            # Find the source location of the controller action using the controller_class and action
+            {
+              prefix: r[:name],
+              verb: r[:verb],
+              uri: r[:path],
+              controller: {
+                name: controller,
+                class: controller_class,
+                action: action,
+                source_location: source_location,
+              },
+              route_source_location: r[:source_location],
+            }
+          end
+          @buffer << JSON.pretty_generate(routes)
+        end
+      end
     end
 
     class HtmlTableFormatter

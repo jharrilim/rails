@@ -9,6 +9,7 @@ module Rails
       class_option :grep, aliases: "-g", desc: "Grep routes by a specific pattern."
       class_option :expanded, type: :boolean, aliases: "-E", desc: "Print routes expanded vertically with parts explained."
       class_option :unused, type: :boolean, aliases: "-u", desc: "Print unused routes."
+      class_option :json, type: :boolean, aliases: "-j", desc: "Print routes in JSON. Does not work with --expanded."
 
       no_commands do
         def invoke_command(*)
@@ -34,7 +35,9 @@ module Rails
         end
 
         def formatter
-          if options.key?("expanded")
+          if options.key?("json")
+            ActionDispatch::Routing::ConsoleFormatter::Json.new
+          elsif options.key?("expanded")
             ActionDispatch::Routing::ConsoleFormatter::Expanded.new
           else
             ActionDispatch::Routing::ConsoleFormatter::Sheet.new
