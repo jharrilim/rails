@@ -296,7 +296,6 @@ module ActionDispatch
                 [controller_class, controller_constant && controller_constant.instance_method(action).source_location.join(":")]
               end
 
-            # Find the source location of the controller action using the controller_class and action
             {
               prefix: r[:name],
               verb: r[:verb],
